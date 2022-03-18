@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import json
 from pprint import pprint
 
 TOKEN = '5147834401:AAFIrq8GtNN5y8wg9LWxYKbXWa_4r4VaEsg'
@@ -56,18 +57,15 @@ def start(update, context):
         context.bot.send_message(chat_id=chat.id, text='invalid operation')
     g = func(v, n, g)
     context.bot.send_message(chat_id=chat.id, text=g)
-with open("accounts1.txt", "w") as f:
-    f.print([
-    { 
-        "name": "Stepan",
-        "currency": [
-            "USD",
-            "EUR",
-            "CZK",
-            "CHF"
-        ]
-    }
-])
+    
+def load_file_currency(currency):
+    with open("accounts1.txt") as f:
+        file_currency = json.load(f)
+        file_currency["information"].append(currency)
+        with open("accounts1.txt", "w") as f1:
+            json.dump(file_currency, f1, ensure_ascii = False, indent = 2)
+    
+    
 
 
 dispatcher.add_handler(CommandHandler('start', start))  # /start
