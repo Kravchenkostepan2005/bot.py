@@ -1,77 +1,87 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+"""telegram bot who works with NBU API"""
+
+import requests
+import datetime
 import json
-from pprint import pprint
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import KeyboardButton, ReplyKeyboardMarkup, chat
+from lib2to3.fixes.fix_input import context
 
-TOKEN = '5147834401:AAFIrq8GtNN5y8wg9LWxYKbXWa_4r4VaEsg'
-updater = Updater(TOKEN, use_context=True)
-
-dispatcher = updater.dispatcher
-print('Bot started. Press Ctrl+Z to exit')
+TOKEN = '5109879811:AAHhjXil990ryl0C4eCF5oM3DEjFojl0lxQ'
+print("Bot is up")
+updater = Updater(TOKEN)
 
 
-def start(update, context):
+def welcome(update, context):
     chat = update.effective_chat
-    a = 'hello, welcome to calculator bot input/b and write an equation with spaces (like /b 1 + 1)' \
-        'operators are: + - * /'
-    context.bot.send_message(chat_id=chat.id, text=a)
+    buttons = [[KeyboardButton('USD')], [KeyboardButton('EUR')], [KeyboardButton('PLN')], [KeyboardButton('GEL')]]
+    context.bot.send_message(chat_id=chat.id, text='Hello! I am your currency bot',
+                             reply_markup=ReplyKeyboardMarkup(buttons))
 
 
-def any_message(update, context):
+def currency_rate1(update, context):
+    global message
     chat = update.effective_chat
-    text = update.message.text
-    if text.isdigit():
-        number = float(text)
-    a = float(input("Enter a: "))
-    b = float(input("Enter b: "))
-    s = input("Enter s: ")
+    currency_code = update.message.text
+    if currency_code in ('USD', 'EUR', 'PLN', 'GEL'):
+        currency_rate1 = requests.get(f'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode='
+                                      f'{currency_code}&date=20220313&json').json()
+        rate = currency_rate1[0]['rate']
+        message = f'{currency_code} rate: {rate} UAH'
+    context.bot.send_message(chat_id=chat.id, text=message)
 
-    def func(a, b, s):
-        if s == "+":
-            f = a + b
-        elif s == "-":
-            f = a - b
-        elif s == "*":
-            f = a * b
-        elif s == "/":
-            f = a / b
-        else:
-            return "error"
-        return f
+def create_message_to_json(currency_code, date, rate):
+    data = {"currency code" : currency_code, "date" : date, "rate" : rate}
+    d = json.dumps(data)
+    print(d)
+
+def write_to_file(message):
+    with open("f.json", "a") as f:
+        f.append(json.dumps(data))
 
 
-def start(update, context):
+def get_details_from_api(currency_code, date):
+    api = requests.get(f"https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=")
+                 f'{currency_code}&date={date}&json').json
+    print(api)
+
+def create_2_dates():
+    date1 = datetime.datetime.now()
+    date2 = date1 - 1
+    print(date1, date2)
+
+def currency_rate1(update, context):
+    global message
     chat = update.effective_chat
-    t = update.message.text
-    try:
-        a, b, c, d = l.split()
-    except ValueError:
-        context.bot.send_message(chat_id=chat.id, text='invalid operation')
-        return
-    if b.isdigit():
-        v = float(b)
-    else:
-        context.bot.send_message(chat_id=chat.id, text='invalid operation')
-    if d.isdigit():
-        n = float(d)
-    else:
-        context.bot.send_message(chat_id=chat.id, text='invalid operation')
-    g = func(v, n, g)
-    context.bot.send_message(chat_id=chat.id, text=g)
-
-def load_file_currency(currency):
-    with open("accounts1.txt") as f:
-        json.load = load_file_currency
-        json.load["information"].append(currency)
-        with open("accounts1.txt", "w") as f1:
-            json.dump(load_file_currency, f1, ensure_ascii = False, indent = 2)
-print(load_file_currency())
+    currency_code = update.message.text
+    date1, date2 = create_2_dates()
+    if currency_code in ('USD', 'EUR', 'PLN', 'GEL'):
+        currency_rate1 = get_details_from_api(currency_code, date1)
+        currency_rate2 = get_details_from_api(currency_code, date2)
+        rate = currency_rate1[0]['rate']
+        currency_difference = currency_rate1 - currency_rate2
+        message = f'{currency_code} rate: {rate} UAH'
+        write_to_file(create_message_to_json())
 
 
+        def load_file_currency(currency):
+            with open("accounts1.txt") as f:
+                json.load = load_file_currency
+                json.load["information"].append(currency)
+                with open("accounts1.txt", "w") as f1:
+                    json.dump(load_file_currency, f1, ensure_ascii=False, indent=2)
+                print(load_file_currency())
+            write_to_file(create_message_to_json())
+    context.bot.send_message(chat_id=chat.id, text=message)
+    rate = currency_rate1[0]['rate']
+    message = f'{currency_code} rate: {rate} UAH'
+    context.bot.send_message(chat_id=chat.id, text=message)
+    message1 = f'{currency_code}'
+    context.bot.send_message(chat_id=chat.id, text=message1)
 
-
-
-dispatcher.add_handler(CommandHandler('start', start))  # /start
-dispatcher.add_handler(MessageHandler(Filters.all, any_message))
+disp = updater.dispatcher
+disp.add_handler(CommandHandler('start', welcome))
+disp.add_handler(MessageHandler(Filters.all, currency_rate))
 
 updater.start_polling()
 updater.idle()
