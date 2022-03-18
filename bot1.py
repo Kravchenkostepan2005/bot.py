@@ -56,8 +56,9 @@ def start(update, context):
         context.bot.send_message(chat_id=chat.id, text='invalid operation')
     g = func(v, n, g)
     context.bot.send_message(chat_id=chat.id, text=g)
-print([
-    {
+with open("accounts1.txt", "w") as f:
+    f.print([
+    { 
         "name": "Stepan",
         "currency": [
             "USD",
