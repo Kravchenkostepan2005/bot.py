@@ -57,14 +57,17 @@ def start(update, context):
         context.bot.send_message(chat_id=chat.id, text='invalid operation')
     g = func(v, n, g)
     context.bot.send_message(chat_id=chat.id, text=g)
-    
+
 def load_file_currency(currency):
     with open("accounts1.txt") as f:
-        file_currency = json.load(f)
-        file_currency["information"].append(currency)
-        json.dump(file_currency, f, ensure_ascii = False, indent = 2)
-    
-    
+        json.load = load_file_currency
+        json.load["information"].append(currency)
+        with open("accounts1.txt", "w") as f1:
+            json.dump(load_file_currency, f1, ensure_ascii = False, indent = 2)
+print(load_file_currency())
+
+
+
 
 
 dispatcher.add_handler(CommandHandler('start', start))  # /start
