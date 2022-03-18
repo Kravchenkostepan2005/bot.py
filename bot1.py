@@ -62,8 +62,7 @@ def load_file_currency(currency):
     with open("accounts1.txt") as f:
         file_currency = json.load(f)
         file_currency["information"].append(currency)
-        with open("accounts1.txt", "w") as f1:
-            json.dump(file_currency, f1, ensure_ascii = False, indent = 2)
+        json.dump(file_currency, f, ensure_ascii = False, indent = 2)
     
     
 
